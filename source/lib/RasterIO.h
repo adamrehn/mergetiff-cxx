@@ -122,7 +122,7 @@ class RasterIO
 			}
 			
 			//Determine the image dimensions
-			uint64_t numChannels = dataset->GetRasterCount();
+			uint64_t numChannels = data.channels();
 			uint64_t numRows = dataset->GetRasterYSize();
 			uint64_t numCols = dataset->GetRasterXSize();
 			
