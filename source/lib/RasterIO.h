@@ -57,13 +57,14 @@ class RasterIO
 			RasterData<PrimitiveTy> data(numChannels, numRows, numCols);
 			
 			//Read the data one raster band at a time
+			unsigned int channelOffset = 0;
 			for (auto bandIndex : bands)
 			{
 				//Retrieve the raster band for this channel
 				GDALRasterBand* band = dataset->GetRasterBand(bandIndex);
 				
 				//Read the raster data into our buffer
-				if (RasterIO::bandToBuffer<PrimitiveTy>(band, data, numChannels, numCols, numRows, bandIndex-1) == false) {
+				if (RasterIO::bandToBuffer<PrimitiveTy>(band, data, numChannels, numCols, numRows, channelOffset++) == false) {
 					throw std::runtime_error("failed to read data from GDAL raster band");
 				}
 			}
