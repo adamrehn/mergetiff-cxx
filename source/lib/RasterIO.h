@@ -106,6 +106,7 @@ class RasterIO
 			}
 			
 			//Verify that the dataset datatype matches the expected datatype
+			GDALDataType expectedType = DatatypeConversion::primitiveToGdal<PrimitiveTy>();
 			if (dataset->GetRasterBand(1)->GetRasterDataType() != expectedType) {
 				throw std::runtime_error("supplied dataset datatype does not match expected datatype");
 			}
