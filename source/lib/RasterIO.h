@@ -96,6 +96,47 @@ class RasterIO
 			return data;
 		}
 		
+		//Reads the raster data for an individual raster band into an existing in-memory buffer, with an optional destination channel offset
+		template <typename PrimitiveTy>
+		static inline bool readBandWithOffset(GDALDatasetRef& dataset, RasterData<PrimitiveTy>& data, unsigned int bandIndex, unsigned int destOffset = 0)
+		{
+			//Verify that a valid dataset was supplied
+			if (!dataset || dataset->GetRasterCount() < 1) {
+				throw std::runtime_error("supplied dataset does not contain any raster bands");
+			}
+			
+			//Verify that the dataset datatype matches the expected datatype
+			if (dataset->GetRasterBand(1)->GetRasterDataType() != expectedType) {
+				throw std::runtime_error("supplied dataset datatype does not match expected datatype");
+			}
+			
+			//Verify that the requested band index is valid
+			if (bandIndex > dataset->GetRasterCount()) {
+				throw std::runtime_error("invalid band index " + std::to_string(bandIndex));
+			}
+			
+			//Verify that the specified destination channel offset is valid
+			if (destOffset >= data.channels()) {
+				throw std::runtime_error("destination channel offset " + std::to_string(destOffset));
+			}
+			
+			//Determine the image dimensions
+			uint64_t numChannels = dataset->GetRasterCount();
+			uint64_t numRows = dataset->GetRasterYSize();
+			uint64_t numCols = dataset->GetRasterXSize();
+			
+			//Verify that the destination buffer dimensions match the image dimensions
+			if (data.rows() != numRows || data.cols() != numCols) {
+				throw std::runtime_error("cannot copy raster data into buffer with different image dimensions");
+			}
+			
+			//Retrieve the requested raster band
+			GDALRasterBand* band = dataset->GetRasterBand(bandIndex);
+			
+			//Read the raster data into the buffer
+			return RasterIO::bandToBuffer<PrimitiveTy>(band, data, numChannels, numCols, numRows, destOffset);
+		}
+		
 		//Writes the raster data for an entire dataset
 		template <typename PrimitiveTy>
 		static inline bool writeDataset(GDALDatasetRef& dataset, const RasterData<PrimitiveTy>& data)
