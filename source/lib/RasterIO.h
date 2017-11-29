@@ -160,8 +160,6 @@ class RasterIO
 			return RasterIO::bufferToBand<PrimitiveTy>(band, data, numChannels, numCols, numRows);
 		}
 		
-	protected:
-		
 		//Performs the GDALRasterBand::RasterIO() call to read data from the band into an in-memory buffer
 		template <typename PrimitiveTy>
 		static inline bool bandToBuffer(GDALRasterBand* band, RasterData<PrimitiveTy>& data, uint64_t numChannels, uint64_t numCols, uint64_t numRows, uint64_t channelOffset = 0)
