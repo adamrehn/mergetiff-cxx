@@ -7,6 +7,7 @@
 
 #include <gdal_priv.h>
 #include <gdal.h>
+#include <algorithm>
 #include <stdexcept>
 #include <vector>
 using std::vector;
