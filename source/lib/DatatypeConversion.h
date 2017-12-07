@@ -13,7 +13,7 @@ inline GDALDataType primitiveToGdal() {
 	throw std::runtime_error("unsupported primitive type");
 }
 
-#define _P2G_SPECIALISATION(PrimitiveTy, GdalTy) template<> GDALDataType primitiveToGdal<PrimitiveTy>() { return GdalTy; }
+#define _P2G_SPECIALISATION(PrimitiveTy, GdalTy) template<> inline GDALDataType primitiveToGdal<PrimitiveTy>() { return GdalTy; }
 _P2G_SPECIALISATION(uint8_t,  GDT_Byte)
 _P2G_SPECIALISATION(uint16_t, GDT_UInt16)
 _P2G_SPECIALISATION(int16_t,  GDT_Int16)
