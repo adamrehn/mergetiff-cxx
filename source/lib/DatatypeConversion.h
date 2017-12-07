@@ -9,7 +9,7 @@ namespace mergetiff {
 namespace DatatypeConversion {
 
 template <typename PrimitiveTy>
-GDALDataType primitiveToGdal() {
+inline GDALDataType primitiveToGdal() {
 	throw std::runtime_error("unsupported primitive type");
 }
 
