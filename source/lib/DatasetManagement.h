@@ -186,6 +186,36 @@ class DatasetManagement
 			return GDALDatasetRef(dataset);
 		}
 		
+		//Creates a copy of the supplied dataset using the CreateCopy() method of the specified driver
+		static inline GDALDatasetRef createDatasetCopy(GDALDatasetRef& dataset, const string& driver, const string& filename)
+		{
+			//Register all GDAL drivers
+			GDALAllRegister();
+			
+			//Attempt to retrieve a reference to the requested GDAL driver
+			GDALDriver* gdalDriver = ((GDALDriver*)GDALGetDriverByName(driver.c_str()));
+			if (gdalDriver == nullptr) {
+				throw std::runtime_error("failed to retrieve the GDAL \"" + driver + "\" driver handle");
+			}
+			
+			//Attempt to create the copy dataset
+			GDALDataset* copyDataset = gdalDriver->CreateCopy(
+				filename.c_str(),
+				dataset.get(),
+				false,
+				nullptr,
+				nullptr,
+				nullptr
+			);
+			
+			//Verify that we were able to create the copy
+			if (copyDataset == nullptr) {
+				throw std::runtime_error("failed to create dataset copy");
+			}
+			
+			return GDALDatasetRef(copyDataset);
+		}
+		
 		//Creates a merged dataset containing all of the supplied raster bands along with the metadata from the specified dataset
 		template <typename PrimitiveTy>
 		static inline GDALDatasetRef createMergedDatasetForType(const string& filename, GDALDatasetRef& metadataDataset, vector<GDALRasterBand*> rasterBands)
