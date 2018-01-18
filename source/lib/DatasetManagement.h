@@ -219,7 +219,7 @@ class DatasetManagement
 		
 		//Creates a merged dataset containing all of the supplied raster bands along with the metadata from the specified dataset
 		template <typename PrimitiveTy>
-		static inline GDALDatasetRef createMergedDatasetForType(const string& filename, GDALDatasetRef& metadataDataset, vector<GDALRasterBand*> rasterBands)
+		static inline GDALDatasetRef createMergedDatasetForType(const string& filename, GDALDatasetRef& metadataDataset, vector<GDALRasterBand*> rasterBands, GDALProgressFunc progressCallback = nullptr)
 		{
 			//Register all GDAL drivers
 			GDALAllRegister();
@@ -338,7 +338,7 @@ class DatasetManagement
 				virtualDataset,
 				false,
 				options.get(),
-				nullptr,
+				progressCallback,
 				nullptr
 			);
 			
@@ -351,11 +351,11 @@ class DatasetManagement
 		}
 		
 		//Helper function for createMergedDatasetForType() to automatically provide the correct template argument
-		static inline GDALDatasetRef createMergedDataset(const string& filename, GDALDatasetRef& metadataDataset, vector<GDALRasterBand*> rasterBands)
+		static inline GDALDatasetRef createMergedDataset(const string& filename, GDALDatasetRef& metadataDataset, vector<GDALRasterBand*> rasterBands, GDALProgressFunc progressCallback = nullptr)
 		{
 			GDALDataType dtype = rasterBands[0]->GetRasterDataType();
 			
-			#define _CREATE_MERGED(GdalTy, PrimitiveTy) case GdalTy: return DatasetManagement::createMergedDatasetForType<PrimitiveTy>(filename, metadataDataset, rasterBands)
+			#define _CREATE_MERGED(GdalTy, PrimitiveTy) case GdalTy: return DatasetManagement::createMergedDatasetForType<PrimitiveTy>(filename, metadataDataset, rasterBands, progressCallback)
 			switch (dtype)
 			{
 				_CREATE_MERGED(GDT_Byte,    uint8_t);

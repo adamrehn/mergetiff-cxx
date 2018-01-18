@@ -53,7 +53,7 @@ int main (int argc, char* argv[])
 			}
 			
 			//Attempt to create the merged dataset
-			DatasetManagement::createMergedDataset(outputFile, datasets[0], bands);
+			DatasetManagement::createMergedDataset(outputFile, datasets[0], bands, GDALTermProgress);
 			clog << "Created merged dataset \"" << outputFile << "\"." << endl;
 		}
 		else
