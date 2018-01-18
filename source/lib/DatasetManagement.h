@@ -12,6 +12,7 @@
 #include <gdal.h>
 #include <gdal_priv.h>
 #include <cpl_conv.h>
+#include <vrtdataset.h>
 #include <string>
 #include <vector>
 using std::string;
@@ -232,27 +233,30 @@ class DatasetManagement
 				}
 			}
 			
+			//Attempt to retrieve a reference to the GeoTiff VRT driver
+			GDALDriver* vrtDriver = ((GDALDriver*)GDALGetDriverByName("VRT"));
+			if (vrtDriver == nullptr) {
+				throw std::runtime_error("failed to retrieve the GDAL VRT driver handle");
+			}
+			
 			//Attempt to retrieve a reference to the GeoTiff GDAL driver
 			GDALDriver* tiffDriver = ((GDALDriver*)GDALGetDriverByName("GTiff"));
 			if (tiffDriver == nullptr) {
 				throw std::runtime_error("failed to retrieve the GDAL GeoTiff driver handle");
 			}
 			
-			//Attempt to create the output dataset
-			ArgsArray options = DriverOptions::geoTiffOptions(expectedType);
-			GDALDataset* dataset = tiffDriver->Create(
-				filename.c_str(),
-				rasterBands[0]->GetXSize(),
-				rasterBands[0]->GetYSize(),
-				rasterBands.size(),
-				expectedType,
-				options.get()
-			);
+			//Attempt to create a virtual dataset
+			int width  = rasterBands[0]->GetXSize();
+			int height = rasterBands[0]->GetYSize();
+			GDALDataset* virtualDataset = vrtDriver->Create("", width, height, 0, expectedType, nullptr);
 			
-			//Verify that we were able to create the dataset
-			if (dataset == nullptr) {
-				throw std::runtime_error("failed to open output dataset \"" + filename + "\"");
+			//Verify that we were able to create the virtual dataset
+			if (virtualDataset == nullptr) {
+				throw std::runtime_error("failed to create virtual dataset");
 			}
+			
+			//Ensure the virtual dataset is closed when the function ends
+			GDALDatasetRef virtualWrapper(virtualDataset);
 			
 			//If a dataset was specified to copy metadata from, do so
 			if (metadataDataset)
@@ -264,7 +268,7 @@ class DatasetManagement
 				if (domains == nullptr)
 				{
 					//No domains, simply copy the metadata for the default domain
-					dataset->SetMetadata(metadataDataset->GetMetadata());
+					virtualDataset->SetMetadata(metadataDataset->GetMetadata());
 				}
 				else
 				{
@@ -272,7 +276,7 @@ class DatasetManagement
 					char** currDomain = domains;
 					while (*currDomain != nullptr)
 					{
-						dataset->SetMetadata(metadataDataset->GetMetadata(*currDomain), *currDomain);
+						virtualDataset->SetMetadata(metadataDataset->GetMetadata(*currDomain), *currDomain);
 						currDomain++;
 					}
 					
@@ -281,18 +285,18 @@ class DatasetManagement
 				}
 				
 				//Copy projection
-				dataset->SetProjection(metadataDataset->GetProjectionRef());
+				virtualDataset->SetProjection(metadataDataset->GetProjectionRef());
 				
 				//Copy affine GeoTransform
 				double padfTransform[6];
 				if (metadataDataset->GetGeoTransform(padfTransform) != CE_Failure) {
-					dataset->SetGeoTransform(padfTransform);
+					virtualDataset->SetGeoTransform(padfTransform);
 				}
 				
 				//Copy GCPs
 				if (metadataDataset->GetGCPCount() > 0)
 				{
-					dataset->SetGCPs(
+					virtualDataset->SetGCPs(
 						metadataDataset->GetGCPCount(),
 						metadataDataset->GetGCPs(),
 						metadataDataset->GetGCPProjection()
@@ -300,16 +304,18 @@ class DatasetManagement
 				}
 			}
 			
-			//Copy each of the input raster bands
+			//Assign each of the input raster bands as the source for the corresponding virtual band
 			for (unsigned int index = 0; index < rasterBands.size(); ++index)
 			{
-				//Retrieve the input and output bands
+				//Retrieve the input band
 				GDALRasterBand* inputBand = rasterBands[index];
-				GDALRasterBand* outputBand = dataset->GetRasterBand(index+1);
 				
-				//Copy the band data
-				RasterData<PrimitiveTy> bandData = RasterIO::readBand<PrimitiveTy>(inputBand, expectedType);
-				RasterIO::writeBand(outputBand, bandData);
+				//Create and retrieve the output band
+				virtualDataset->AddBand(expectedType, nullptr);
+				VRTSourcedRasterBand* outputBand = (VRTSourcedRasterBand*)(virtualDataset->GetRasterBand(index+1));
+				
+				//Add the input band as the source for the output band
+				outputBand->AddSimpleSource(inputBand, 0, 0, width, height, 0, 0, width, height);
 				
 				//Copy the "no data" sentinel value, if any
 				int hasNoDataValue = 0;
@@ -323,6 +329,22 @@ class DatasetManagement
 				if (colourInterp != GCI_Undefined) {
 					outputBand->SetColorInterpretation(colourInterp);
 				}
+			}
+			
+			//Attempt to create the output dataset as a copy of the virtual dataset
+			ArgsArray options = DriverOptions::geoTiffOptions(expectedType);
+			GDALDataset* dataset = tiffDriver->CreateCopy(
+				filename.c_str(),
+				virtualDataset,
+				false,
+				options.get(),
+				nullptr,
+				nullptr
+			);
+			
+			//Verify that we were able to create the dataset
+			if (dataset == nullptr) {
+				throw std::runtime_error("failed to open output dataset \"" + filename + "\"");
 			}
 			
 			return GDALDatasetRef(dataset);
