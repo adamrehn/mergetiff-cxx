@@ -25,6 +25,15 @@ class RasterData
 			this->_cols = cols;
 		}
 		
+		//Takes ownership of an existing buffer with the specified dimensions
+		RasterData(PrimitiveTy* buffer, uint64_t channels, uint64_t rows, uint64_t cols)
+		{
+			MERGETIFF_SMART_POINTER_RESET(this->_data, buffer);
+			this->_channels = channels;
+			this->_rows = rows;
+			this->_cols = cols;
+		}
+		
 		//RasterData objects cannot be copied
 		RasterData(const RasterData& other) = delete;
 		RasterData& operator=(const RasterData& other) = delete;
