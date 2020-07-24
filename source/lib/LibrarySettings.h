@@ -9,6 +9,11 @@
 #define MERGETIFF_SMART_POINTER_TYPE std::unique_ptr
 #endif
 
+//If a user-specified smart pointer type does not support the `get()` method then an equivalent must be supplied
+#ifndef MERGETIFF_SMART_POINTER_GET
+#define MERGETIFF_SMART_POINTER_GET(ptr) ptr.get()
+#endif
+
 //Allow users to specify a logging mechanism for error messages when exception handling is disabled
 #ifndef MERGETIFF_ERROR_LOGGER
 #define MERGETIFF_ERROR_LOGGER(message) fputs(message, stderr)

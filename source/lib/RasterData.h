@@ -68,12 +68,12 @@ class RasterData
 		
 		//Retrieves the pointer to the underlying buffer
 		PrimitiveTy* getBuffer() {
-			return this->_data.get();
+			return MERGETIFF_SMART_POINTER_GET(this->_data);
 		}
 		
 		//Retrieves a const pointer to the underlying buffer
 		const PrimitiveTy* getBuffer() const {
-			return this->_data.get();
+			return MERGETIFF_SMART_POINTER_GET(this->_data);
 		}
 		
 	protected:

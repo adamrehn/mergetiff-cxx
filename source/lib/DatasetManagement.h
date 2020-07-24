@@ -5,6 +5,7 @@
 #include "DriverOptions.h"
 #include "ErrorHandling.h"
 #include "GDALDatasetRef.h"
+#include "LibrarySettings.h"
 #include "RasterData.h"
 #include "RasterIO.h"
 
@@ -202,7 +203,7 @@ class DatasetManagement
 			//Attempt to create the copy dataset
 			GDALDataset* copyDataset = gdalDriver->CreateCopy(
 				filename.c_str(),
-				dataset.get(),
+				MERGETIFF_SMART_POINTER_GET(dataset),
 				false,
 				nullptr,
 				nullptr,
