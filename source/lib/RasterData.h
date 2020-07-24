@@ -19,7 +19,7 @@ class RasterData
 		//Creates a buffer with the specified dimensions
 		RasterData(uint64_t channels, uint64_t rows, uint64_t cols)
 		{
-			this->_data.reset(new PrimitiveTy[channels * rows * cols]);
+			MERGETIFF_SMART_POINTER_RESET(this->_data, new PrimitiveTy[channels * rows * cols]);
 			this->_channels = channels;
 			this->_rows = rows;
 			this->_cols = cols;
