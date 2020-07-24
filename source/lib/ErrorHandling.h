@@ -1,6 +1,7 @@
 #ifndef _MERGETIFF_ERROR_HANDLING
 #define _MERGETIFF_ERROR_HANDLING
 
+#include "GDALDatasetRef.h"
 #include "LibrarySettings.h"
 
 #include <stdexcept>
@@ -56,6 +57,12 @@ class ErrorHandling
 		template <typename T>
 		static inline T handleError(const std::string& message) {
 			return ErrorHandling::handleError(T(), message.c_str());
+		}
+		
+		//Template specialisation for GDALDatasetRef
+		template<>
+		static inline GDALDatasetRef handleError<GDALDatasetRef>(const std::string& message) {
+			return ErrorHandling::handleError(GDALDatasetRef(nullptr), message.c_str());
 		}
 };
 
