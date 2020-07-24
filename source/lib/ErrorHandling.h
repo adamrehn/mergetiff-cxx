@@ -8,27 +8,31 @@
 #include <string>
 #include <utility>
 
-//Determine whether C++ exception handling is enabled
-#ifdef _MSC_VER
-	
-	//As per <https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros>,
-	//MSVC defines _CPPUNWIND with a value of 1 if exception handling is enabled
-	#ifdef _CPPUNWIND
-		#define _MERGETIFF_USE_EXCEPTIONS 1
+//Determine whether C++ exception handling is enabled, allowing users to forcibly disable it for just this library
+#ifndef MERGETIFF_DISABLE_EXCEPTIONS
+	#ifdef _MSC_VER
+		
+		//As per <https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros>,
+		//MSVC defines _CPPUNWIND with a value of 1 if exception handling is enabled
+		#ifdef _CPPUNWIND
+			#define _MERGETIFF_USE_EXCEPTIONS 1
+		#else
+			#define _MERGETIFF_USE_EXCEPTIONS 0
+		#endif
+		
 	#else
-		#define _MERGETIFF_USE_EXCEPTIONS 0
+		
+		//For non-Microsoft compilers use the standard feature check from here:
+		//<https://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations>
+		#if __cpp_exceptions == 199711
+			#define _MERGETIFF_USE_EXCEPTIONS 1
+		#else
+			#define _MERGETIFF_USE_EXCEPTIONS 0
+		#endif
+		
 	#endif
-	
 #else
-	
-	//For non-Microsoft compilers use the standard feature check from here:
-	//<https://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations>
-	#if __cpp_exceptions == 199711
-		#define _MERGETIFF_USE_EXCEPTIONS 1
-	#else
-		#define _MERGETIFF_USE_EXCEPTIONS 0
-	#endif
-	
+	#define _MERGETIFF_USE_EXCEPTIONS 0
 #endif
 
 namespace mergetiff {
@@ -39,7 +43,7 @@ class ErrorHandling
 		
 		//Handles an error, taking into account whether exception handling is enabled
 		template <typename T>
-		static inline T handleError(const T&& sentinel, const std::string& message)
+		static inline T handleError(T&& sentinel, const std::string& message)
 		{
 			#if _MERGETIFF_USE_EXCEPTIONS
 				throw std::runtime_error(message);
