@@ -38,7 +38,7 @@ class ErrorHandling
 		
 		//Handles an error, taking into account whether exception handling is enabled
 		template <typename T>
-		static inline T handleError(const T& sentinel, const std::string& message)
+		static inline T handleError(const T&& sentinel, const std::string& message)
 		{
 			#if _MERGETIFF_USE_EXCEPTIONS
 				throw std::runtime_error(message);

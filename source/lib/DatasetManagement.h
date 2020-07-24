@@ -49,13 +49,13 @@ class DatasetManagement
 		static inline vector<GDALRasterBand*> getRasterBands(GDALDatasetRef& dataset, const vector<unsigned int>& bandIndices)
 		{
 			//Verify that all of the requested band indices are valid
-			vector<GDALRasterBand*> bands;
 			unsigned int maxBand = *(std::max_element(bandIndices.begin(), bandIndices.end()));
 			if (maxBand > (unsigned int)(dataset->GetRasterCount())) {
-				return ErrorHandling::handleError(bands, "invalid band index " + std::to_string(maxBand));
+				return ErrorHandling::handleError< vector<GDALRasterBand*> >("invalid band index " + std::to_string(maxBand));
 			}
 			
 			//Retrieve each of the requested bands
+			vector<GDALRasterBand*> bands;
 			for (auto index : bandIndices) {
 				bands.push_back(dataset->GetRasterBand(index));
 			}
