@@ -6,6 +6,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 //Determine whether C++ exception handling is enabled
 #ifdef _MSC_VER
@@ -48,7 +49,7 @@ class ErrorHandling
 				MERGETIFF_ERROR_LOGGER((message.c_str()));
 				
 				//Return the caller-defined sentinel value that indicates failure
-				return sentinel;
+				return std::move(sentinel);
 				
 			#endif
 		}
