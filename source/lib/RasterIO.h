@@ -2,13 +2,13 @@
 #define _MERGETIFF_RASTER_IO
 
 #include "DatatypeConversion.h"
+#include "ErrorHandling.h"
 #include "GDALDatasetRef.h"
 #include "RasterData.h"
 
 #include <gdal_priv.h>
 #include <gdal.h>
 #include <algorithm>
-#include <stdexcept>
 #include <vector>
 using std::vector;
 
@@ -24,12 +24,12 @@ class RasterIO
 		{
 			//Verify that a valid dataset was supplied
 			if (!dataset || dataset->GetRasterCount() < 1) {
-				throw std::runtime_error("supplied dataset does not contain any raster bands");
+				return ErrorHandling::handleError< RasterData<PrimitiveTy> >("supplied dataset does not contain any raster bands");
 			}
 			
 			//Verify that the dataset datatype matches the expected datatype
 			if (dataset->GetRasterBand(1)->GetRasterDataType() != expectedType) {
-				throw std::runtime_error("supplied dataset datatype does not match expected datatype");
+				return ErrorHandling::handleError< RasterData<PrimitiveTy> >("supplied dataset datatype does not match expected datatype");
 			}
 			
 			//Determine if a set of band indices were specified 
@@ -38,7 +38,7 @@ class RasterIO
 				//Verify that all of the requested band indices are valid
 				unsigned int maxBand = *(std::max_element(bands.begin(), bands.end()));
 				if (maxBand > (unsigned int)(dataset->GetRasterCount())) {
-					throw std::runtime_error("invalid band index " + std::to_string(maxBand));
+					return ErrorHandling::handleError< RasterData<PrimitiveTy> >("invalid band index " + std::to_string(maxBand));
 				}
 			}
 			else
@@ -66,7 +66,7 @@ class RasterIO
 				
 				//Read the raster data into our buffer
 				if (RasterIO::bandToBuffer<PrimitiveTy>(band, data, numChannels, numCols, numRows, channelOffset++) == false) {
-					throw std::runtime_error("failed to read data from GDAL raster band");
+					return ErrorHandling::handleError< RasterData<PrimitiveTy> >("failed to read data from GDAL raster band");
 				}
 			}
 			
@@ -79,7 +79,7 @@ class RasterIO
 		{
 			//Verify that the band datatype matches the expected datatype
 			if (band->GetRasterDataType() != expectedType) {
-				throw std::runtime_error("supplied raster band datatype does not match expected datatype");
+				return ErrorHandling::handleError< RasterData<PrimitiveTy> >("supplied raster band datatype does not match expected datatype");
 			}
 			
 			//Determine the image dimensions
@@ -92,7 +92,7 @@ class RasterIO
 			
 			//Read the raster data into our buffer
 			if (RasterIO::bandToBuffer<PrimitiveTy>(band, data, numChannels, numCols, numRows) == false) {
-				throw std::runtime_error("failed to read data from GDAL raster band");
+				return ErrorHandling::handleError< RasterData<PrimitiveTy> >("failed to read data from GDAL raster band");
 			}
 			
 			return data;
@@ -104,23 +104,23 @@ class RasterIO
 		{
 			//Verify that a valid dataset was supplied
 			if (!dataset || dataset->GetRasterCount() < 1) {
-				throw std::runtime_error("supplied dataset does not contain any raster bands");
+				return ErrorHandling::handleError<bool>("supplied dataset does not contain any raster bands");
 			}
 			
 			//Verify that the dataset datatype matches the expected datatype
 			GDALDataType expectedType = DatatypeConversion::primitiveToGdal<PrimitiveTy>();
 			if (dataset->GetRasterBand(1)->GetRasterDataType() != expectedType) {
-				throw std::runtime_error("supplied dataset datatype does not match expected datatype");
+				return ErrorHandling::handleError<bool>("supplied dataset datatype does not match expected datatype");
 			}
 			
 			//Verify that the requested band index is valid
 			if (bandIndex > dataset->GetRasterCount()) {
-				throw std::runtime_error("invalid band index " + std::to_string(bandIndex));
+				return ErrorHandling::handleError<bool>("invalid band index " + std::to_string(bandIndex));
 			}
 			
 			//Verify that the specified destination channel offset is valid
 			if (destOffset >= data.channels()) {
-				throw std::runtime_error("destination channel offset " + std::to_string(destOffset));
+				return ErrorHandling::handleError<bool>("destination channel offset " + std::to_string(destOffset));
 			}
 			
 			//Determine the image dimensions
@@ -130,7 +130,7 @@ class RasterIO
 			
 			//Verify that the destination buffer dimensions match the image dimensions
 			if (data.rows() != numRows || data.cols() != numCols) {
-				throw std::runtime_error("cannot copy raster data into buffer with different image dimensions");
+				return ErrorHandling::handleError<bool>("cannot copy raster data into buffer with different image dimensions");
 			}
 			
 			//Retrieve the requested raster band

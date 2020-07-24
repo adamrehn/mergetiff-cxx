@@ -1,16 +1,17 @@
 #ifndef _MERGETIFF_DATATYPE_CONVERSION
 #define _MERGETIFF_DATATYPE_CONVERSION
 
+#include "ErrorHandling.h"
+
 #include <gdal.h>
 #include <stdint.h>
-#include <stdexcept>
 
 namespace mergetiff {
 namespace DatatypeConversion {
 
 template <typename PrimitiveTy>
 inline GDALDataType primitiveToGdal() {
-	throw std::runtime_error("unsupported primitive type");
+	return ErrorHandling::handleError(GDT_Unknown, "unsupported primitive type");
 }
 
 #define _P2G_SPECIALISATION(PrimitiveTy, GdalTy) template<> inline GDALDataType primitiveToGdal<PrimitiveTy>() { return GdalTy; }

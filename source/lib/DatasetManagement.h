@@ -3,12 +3,12 @@
 
 #include "DatatypeConversion.h"
 #include "DriverOptions.h"
+#include "ErrorHandling.h"
 #include "GDALDatasetRef.h"
 #include "RasterData.h"
 #include "RasterIO.h"
 
 #include <algorithm>
-#include <stdexcept>
 #include <gdal.h>
 #include <gdal_priv.h>
 #include <cpl_conv.h>
@@ -38,7 +38,7 @@ class DatasetManagement
 			
 			//Verify that we were able to open the dataset
 			if (!dataset) {
-				throw std::runtime_error("failed to open input dataset \"" + filename + "\"");
+				return ErrorHandling::handleError<GDALDatasetRef>("failed to open input dataset \"" + filename + "\"");
 			}
 			
 			return GDALDatasetRef(dataset);
@@ -48,13 +48,13 @@ class DatasetManagement
 		static inline vector<GDALRasterBand*> getRasterBands(GDALDatasetRef& dataset, const vector<unsigned int>& bandIndices)
 		{
 			//Verify that all of the requested band indices are valid
+			vector<GDALRasterBand*> bands;
 			unsigned int maxBand = *(std::max_element(bandIndices.begin(), bandIndices.end()));
 			if (maxBand > (unsigned int)(dataset->GetRasterCount())) {
-				throw std::runtime_error("invalid band index " + std::to_string(maxBand));
+				return ErrorHandling::handleError(bands, "invalid band index " + std::to_string(maxBand));
 			}
 			
 			//Retrieve each of the requested bands
-			vector<GDALRasterBand*> bands;
 			for (auto index : bandIndices) {
 				bands.push_back(dataset->GetRasterBand(index));
 			}
@@ -111,7 +111,7 @@ class DatasetManagement
 			//Attempt to retrieve a reference to the requested GDAL driver
 			GDALDriver* gdalDriver = ((GDALDriver*)GDALGetDriverByName(driver.c_str()));
 			if (gdalDriver == nullptr) {
-				throw std::runtime_error("failed to retrieve the GDAL \"" + driver + "\" driver handle");
+				return ErrorHandling::handleError<GDALDatasetRef>("failed to retrieve the GDAL \"" + driver + "\" driver handle");
 			}
 			
 			//Attempt to create the output dataset
@@ -127,13 +127,13 @@ class DatasetManagement
 			
 			//Verify that we were able to create the dataset
 			if (datasetPtr == nullptr) {
-				throw std::runtime_error("failed to create dataset from raster using \"" + driver + "\" driver");
+				return ErrorHandling::handleError<GDALDatasetRef>("failed to create dataset from raster using \"" + driver + "\" driver");
 			}
 			
 			//Attempt to copy the raster data into the dataset
 			GDALDatasetRef dataset(datasetPtr);
 			if (RasterIO::writeDataset(dataset, data) == false) {
-				throw std::runtime_error("failed to copy raster data into dataset");
+				return ErrorHandling::handleError<GDALDatasetRef>("failed to copy raster data into dataset");
 			}
 			
 			//Set the colour interpretation for each of the raster bands
@@ -174,7 +174,7 @@ class DatasetManagement
 			
 			//Verify that we were able to open the dataset
 			if (dataset == nullptr) {
-				throw std::runtime_error("failed to open in-memory dataset wrapping raster data");
+				return ErrorHandling::handleError<GDALDatasetRef>("failed to open in-memory dataset wrapping raster data");
 			}
 			
 			//Set the colour interpretation for each of the raster bands
@@ -196,7 +196,7 @@ class DatasetManagement
 			//Attempt to retrieve a reference to the requested GDAL driver
 			GDALDriver* gdalDriver = ((GDALDriver*)GDALGetDriverByName(driver.c_str()));
 			if (gdalDriver == nullptr) {
-				throw std::runtime_error("failed to retrieve the GDAL \"" + driver + "\" driver handle");
+				return ErrorHandling::handleError<GDALDatasetRef>("failed to retrieve the GDAL \"" + driver + "\" driver handle");
 			}
 			
 			//Attempt to create the copy dataset
@@ -211,7 +211,7 @@ class DatasetManagement
 			
 			//Verify that we were able to create the copy
 			if (copyDataset == nullptr) {
-				throw std::runtime_error("failed to create dataset copy");
+				return ErrorHandling::handleError<GDALDatasetRef>("failed to create dataset copy");
 			}
 			
 			return GDALDatasetRef(copyDataset);
@@ -229,20 +229,20 @@ class DatasetManagement
 			for (auto band : rasterBands)
 			{
 				if (band->GetRasterDataType() != expectedType) {
-					throw std::runtime_error("invalid datatype in one or more raster bands");
+					return ErrorHandling::handleError<GDALDatasetRef>("invalid datatype in one or more raster bands");
 				}
 			}
 			
 			//Attempt to retrieve a reference to the GeoTiff VRT driver
 			GDALDriver* vrtDriver = ((GDALDriver*)GDALGetDriverByName("VRT"));
 			if (vrtDriver == nullptr) {
-				throw std::runtime_error("failed to retrieve the GDAL VRT driver handle");
+				return ErrorHandling::handleError<GDALDatasetRef>("failed to retrieve the GDAL VRT driver handle");
 			}
 			
 			//Attempt to retrieve a reference to the GeoTiff GDAL driver
 			GDALDriver* tiffDriver = ((GDALDriver*)GDALGetDriverByName("GTiff"));
 			if (tiffDriver == nullptr) {
-				throw std::runtime_error("failed to retrieve the GDAL GeoTiff driver handle");
+				return ErrorHandling::handleError<GDALDatasetRef>("failed to retrieve the GDAL GeoTiff driver handle");
 			}
 			
 			//Attempt to create a virtual dataset
@@ -252,7 +252,7 @@ class DatasetManagement
 			
 			//Verify that we were able to create the virtual dataset
 			if (virtualDataset == nullptr) {
-				throw std::runtime_error("failed to create virtual dataset");
+				return ErrorHandling::handleError<GDALDatasetRef>("failed to create virtual dataset");
 			}
 			
 			//Ensure the virtual dataset is closed when the function ends
@@ -344,7 +344,7 @@ class DatasetManagement
 			
 			//Verify that we were able to create the dataset
 			if (dataset == nullptr) {
-				throw std::runtime_error("failed to open output dataset \"" + filename + "\"");
+				return ErrorHandling::handleError<GDALDatasetRef>("failed to open output dataset \"" + filename + "\"");
 			}
 			
 			return GDALDatasetRef(dataset);
@@ -367,7 +367,7 @@ class DatasetManagement
 				_CREATE_MERGED(GDT_Float64, double);
 				
 				default:
-					throw std::runtime_error("unsupported GDAL datatype");
+					return ErrorHandling::handleError<GDALDatasetRef>("unsupported GDAL datatype");
 			}
 			#undef _CREATE_MERGED
 		}
