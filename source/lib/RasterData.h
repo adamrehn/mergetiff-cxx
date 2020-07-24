@@ -1,8 +1,9 @@
 #ifndef _MERGETIFF_RASTER_DATA
 #define _MERGETIFF_RASTER_DATA
 
+#include "LibrarySettings.h"
+
 #include <stdint.h>
-#include <memory>
 
 namespace mergetiff {
 
@@ -91,7 +92,7 @@ class RasterData
 			return (y * this->_cols * this->_channels) + (x * this->_channels) + channel;
 		}
 		
-		std::unique_ptr<PrimitiveTy[]> _data;
+		MERGETIFF_SMART_POINTER_TYPE<PrimitiveTy[]> _data;
 		uint64_t _channels;
 		uint64_t _rows;
 		uint64_t _cols;

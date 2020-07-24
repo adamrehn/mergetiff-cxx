@@ -1,7 +1,8 @@
 #ifndef _MERGETIFF_GDAL_DATASET_REF
 #define _MERGETIFF_GDAL_DATASET_REF
 
-#include <memory>
+#include "LibrarySettings.h"
+
 #include <gdal.h>
 #include <gdal_priv.h>
 
@@ -17,7 +18,7 @@ class GDALDatasetDeleter
 };
 
 //Smart pointer type for GDAL datasets
-typedef std::unique_ptr<GDALDataset, GDALDatasetDeleter> GDALDatasetRef;
+typedef MERGETIFF_SMART_POINTER_TYPE<GDALDataset, GDALDatasetDeleter> GDALDatasetRef;
 
 } //End namespace mergetiff
 

@@ -1,6 +1,8 @@
 #ifndef _MERGETIFF_ERROR_HANDLING
 #define _MERGETIFF_ERROR_HANDLING
 
+#include "LibrarySettings.h"
+
 #include <stdexcept>
 #include <string>
 
@@ -41,10 +43,8 @@ class ErrorHandling
 				throw std::runtime_error(message);
 			#else
 				
-				//If an error logging mechanism has been specified then log the error message
-				#ifdef MERGETIFF_ERROR_LOGGER
-					MERGETIFF_ERROR_LOGGER((message.c_str()))
-				#endif
+				//Log the error message
+				MERGETIFF_ERROR_LOGGER((message.c_str()));
 				
 				//Return the caller-defined sentinel value that indicates failure
 				return sentinel;
