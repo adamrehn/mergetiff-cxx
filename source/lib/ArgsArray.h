@@ -5,8 +5,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-using std::string;
-using std::vector;
 
 namespace mergetiff {
 
@@ -18,7 +16,7 @@ class ArgsArray
 		inline ArgsArray() {}
 		
 		//Initialises the list with values
-		inline ArgsArray(std::initializer_list<string> args)
+		inline ArgsArray(std::initializer_list<std::string> args)
 		{
 			for (auto arg : args) {
 				this->add(arg);
@@ -26,7 +24,7 @@ class ArgsArray
 		}
 		
 		//Initialises the list with values
-		inline ArgsArray(const vector<string>& args)
+		inline ArgsArray(const std::vector<std::string>& args)
 		{
 			for (auto arg : args) {
 				this->add(arg);
@@ -34,9 +32,9 @@ class ArgsArray
 		}
 		
 		//Adds an argument to the list
-		inline void add(const string& arg)
+		inline void add(const std::string& arg)
 		{
-			this->args.push_back( vector<char>(arg.size()+1) );
+			this->args.push_back( std::vector<char>(arg.size()+1) );
 			memcpy(this->args.back().data(), arg.c_str(), arg.size()+1);
 		}
 		
@@ -60,8 +58,8 @@ class ArgsArray
 		}
 		
 	private:
-		vector< vector<char> > args;
-		vector<char*> structure;
+		std::vector< std::vector<char> > args;
+		std::vector<char*> structure;
 };
 
 } //End namespace mergetiff

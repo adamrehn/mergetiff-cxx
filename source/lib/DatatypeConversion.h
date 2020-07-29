@@ -14,14 +14,14 @@ inline GDALDataType primitiveToGdal() {
 	return ErrorHandling::handleError(GDT_Unknown, "unsupported primitive type");
 }
 
-#define _P2G_SPECIALISATION(PrimitiveTy, GdalTy) template<> inline GDALDataType primitiveToGdal<PrimitiveTy>() { return GdalTy; }
-_P2G_SPECIALISATION(uint8_t,  GDT_Byte)
-_P2G_SPECIALISATION(uint16_t, GDT_UInt16)
-_P2G_SPECIALISATION(int16_t,  GDT_Int16)
-_P2G_SPECIALISATION(uint32_t, GDT_UInt32)
-_P2G_SPECIALISATION(int32_t,  GDT_Int32)
-_P2G_SPECIALISATION(float,    GDT_Float32)
-_P2G_SPECIALISATION(double,   GDT_Float64)
+#define _MERGETIFF_P2G_SPECIALISATION(PrimitiveTy, GdalTy) template<> inline GDALDataType primitiveToGdal<PrimitiveTy>() { return GdalTy; }
+_MERGETIFF_P2G_SPECIALISATION(uint8_t,  GDT_Byte)
+_MERGETIFF_P2G_SPECIALISATION(uint16_t, GDT_UInt16)
+_MERGETIFF_P2G_SPECIALISATION(int16_t,  GDT_Int16)
+_MERGETIFF_P2G_SPECIALISATION(uint32_t, GDT_UInt32)
+_MERGETIFF_P2G_SPECIALISATION(int32_t,  GDT_Int32)
+_MERGETIFF_P2G_SPECIALISATION(float,    GDT_Float32)
+_MERGETIFF_P2G_SPECIALISATION(double,   GDT_Float64)
 
 } //End namespace DatatypeConversion
 } //End namespace mergetiff

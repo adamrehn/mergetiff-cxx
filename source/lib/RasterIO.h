@@ -10,7 +10,6 @@
 #include <gdal.h>
 #include <algorithm>
 #include <vector>
-using std::vector;
 
 namespace mergetiff {
 
@@ -20,7 +19,7 @@ class RasterIO
 		
 		//Reads the raster data for an entire dataset
 		template <typename PrimitiveTy>
-		static inline RasterData<PrimitiveTy> readDataset(GDALDatasetRef& dataset, GDALDataType expectedType, vector<unsigned int> bands = vector<unsigned int>())
+		static inline RasterData<PrimitiveTy> readDataset(GDALDatasetRef& dataset, GDALDataType expectedType, std::vector<unsigned int> bands = std::vector<unsigned int>())
 		{
 			//Verify that a valid dataset was supplied
 			if (!dataset || dataset->GetRasterCount() < 1) {

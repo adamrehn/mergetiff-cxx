@@ -16,8 +16,6 @@
 #include <vrtdataset.h>
 #include <string>
 #include <vector>
-using std::string;
-using std::vector;
 
 namespace mergetiff {
 
@@ -26,7 +24,7 @@ class DatasetManagement
 	public:
 		
 		//Opens a GDAL GeoTiff dataset
-		static inline GDALDatasetRef openDataset(const string& filename)
+		static inline GDALDatasetRef openDataset(const std::string& filename)
 		{
 			//Register all GDAL drivers
 			GDALAllRegister();
@@ -46,16 +44,16 @@ class DatasetManagement
 		}
 		
 		//Retrieves the specified raster bands of a GDAL dataset
-		static inline vector<GDALRasterBand*> getRasterBands(GDALDatasetRef& dataset, const vector<unsigned int>& bandIndices)
+		static inline std::vector<GDALRasterBand*> getRasterBands(GDALDatasetRef& dataset, const std::vector<unsigned int>& bandIndices)
 		{
 			//Verify that all of the requested band indices are valid
 			unsigned int maxBand = *(std::max_element(bandIndices.begin(), bandIndices.end()));
 			if (maxBand > (unsigned int)(dataset->GetRasterCount())) {
-				return ErrorHandling::handleError< vector<GDALRasterBand*> >("invalid band index " + std::to_string(maxBand));
+				return ErrorHandling::handleError< std::vector<GDALRasterBand*> >("invalid band index " + std::to_string(maxBand));
 			}
 			
 			//Retrieve each of the requested bands
-			vector<GDALRasterBand*> bands;
+			std::vector<GDALRasterBand*> bands;
 			for (auto index : bandIndices) {
 				bands.push_back(dataset->GetRasterBand(index));
 			}
@@ -64,9 +62,9 @@ class DatasetManagement
 		}
 		
 		//Retrieves all of the raster bands of a GDAL dataset
-		static inline vector<GDALRasterBand*> getAllRasterBands(GDALDatasetRef& dataset)
+		static inline std::vector<GDALRasterBand*> getAllRasterBands(GDALDatasetRef& dataset)
 		{
-			vector<GDALRasterBand*> bands;
+			std::vector<GDALRasterBand*> bands;
 			for (int index = 1; index <= dataset->GetRasterCount(); ++index) {
 				bands.push_back(dataset->GetRasterBand(index));
 			}
@@ -76,7 +74,7 @@ class DatasetManagement
 		
 		//Opens a dataset and reads all of its raster data into a RasterData object
 		template <typename PrimitiveTy>
-		static inline RasterData<PrimitiveTy> rasterFromFile(const string& filename, const vector<unsigned int>& bands = vector<unsigned int>())
+		static inline RasterData<PrimitiveTy> rasterFromFile(const std::string& filename, const std::vector<unsigned int>& bands = std::vector<unsigned int>())
 		{
 			//Attempt to open the dataset
 			GDALDatasetRef dataset = DatasetManagement::openDataset(filename);
@@ -87,7 +85,7 @@ class DatasetManagement
 		
 		//Writes the raster data from a RasterData object to an image file
 		template <typename PrimitiveTy>
-		static inline GDALDatasetRef rasterToFile(const string& filename, const RasterData<PrimitiveTy>& data)
+		static inline GDALDatasetRef rasterToFile(const std::string& filename, const RasterData<PrimitiveTy>& data)
 		{
 			GDALDataType dtype = DatatypeConversion::primitiveToGdal<PrimitiveTy>();
 			ArgsArray options = DriverOptions::geoTiffOptions(dtype);
@@ -96,7 +94,7 @@ class DatasetManagement
 		
 		//Reads all of the raster data from a dataset into a RasterData object
 		template <typename PrimitiveTy>
-		static inline RasterData<PrimitiveTy> rasterFromDataset(GDALDatasetRef& dataset, const vector<unsigned int>& bands = vector<unsigned int>())
+		static inline RasterData<PrimitiveTy> rasterFromDataset(GDALDatasetRef& dataset, const std::vector<unsigned int>& bands = std::vector<unsigned int>())
 		{
 			GDALDataType expectedType = DatatypeConversion::primitiveToGdal<PrimitiveTy>();
 			return RasterIO::readDataset<PrimitiveTy>(dataset, expectedType, bands);
@@ -104,7 +102,7 @@ class DatasetManagement
 		
 		//Creates a GDAL dataset from the supplied raster data (defaults to an in-memory dataset containing a copy of the raster data)
 		template <typename PrimitiveTy>
-		static inline GDALDatasetRef datasetFromRaster(const RasterData<PrimitiveTy>& data, bool forceGrayInterp = false, const string& driver = "MEM", const string& filename = "", ArgsArray options = ArgsArray())
+		static inline GDALDatasetRef datasetFromRaster(const RasterData<PrimitiveTy>& data, bool forceGrayInterp = false, const std::string& driver = "MEM", const std::string& filename = "", ArgsArray options = ArgsArray())
 		{
 			//Register all GDAL drivers
 			GDALAllRegister();
@@ -156,11 +154,11 @@ class DatasetManagement
 			
 			//Build the "filename" that will specify the options for the MEM driver
 			GDALDataType dtype = DatatypeConversion::primitiveToGdal<PrimitiveTy>();
-			string dtypeName = GDALGetDataTypeName(dtype);
+			std::string dtypeName = GDALGetDataTypeName(dtype);
 			char ptrStrBuf[256];
 			int ptrStrLen = CPLPrintPointer(ptrStrBuf, (void*)(data.getBuffer()), 256);
-			string ptrStr = string(ptrStrBuf, ptrStrLen);
-			string filename = string("MEM:::") +
+			std::string ptrStr = std::string(ptrStrBuf, ptrStrLen);
+			std::string filename = std::string("MEM:::") +
 				"DATAPOINTER=" + ptrStr +
 				",PIXELS=" + std::to_string(data.cols()) +
 				",LINES=" + std::to_string(data.rows()) +
@@ -189,7 +187,7 @@ class DatasetManagement
 		}
 		
 		//Creates a copy of the supplied dataset using the CreateCopy() method of the specified driver
-		static inline GDALDatasetRef createDatasetCopy(GDALDatasetRef& dataset, const string& driver, const string& filename)
+		static inline GDALDatasetRef createDatasetCopy(GDALDatasetRef& dataset, const std::string& driver, const std::string& filename)
 		{
 			//Register all GDAL drivers
 			GDALAllRegister();
@@ -220,7 +218,7 @@ class DatasetManagement
 		
 		//Creates a merged dataset containing all of the supplied raster bands along with the metadata from the specified dataset
 		template <typename PrimitiveTy>
-		static inline GDALDatasetRef createMergedDatasetForType(const string& filename, GDALDatasetRef& metadataDataset, vector<GDALRasterBand*> rasterBands, GDALProgressFunc progressCallback = nullptr)
+		static inline GDALDatasetRef createMergedDatasetForType(const std::string& filename, GDALDatasetRef& metadataDataset, std::vector<GDALRasterBand*> rasterBands, GDALProgressFunc progressCallback = nullptr)
 		{
 			//Register all GDAL drivers
 			GDALAllRegister();
@@ -352,7 +350,7 @@ class DatasetManagement
 		}
 		
 		//Helper function for createMergedDatasetForType() to automatically provide the correct template argument
-		static inline GDALDatasetRef createMergedDataset(const string& filename, GDALDatasetRef& metadataDataset, vector<GDALRasterBand*> rasterBands, GDALProgressFunc progressCallback = nullptr)
+		static inline GDALDatasetRef createMergedDataset(const std::string& filename, GDALDatasetRef& metadataDataset, std::vector<GDALRasterBand*> rasterBands, GDALProgressFunc progressCallback = nullptr)
 		{
 			GDALDataType dtype = rasterBands[0]->GetRasterDataType();
 			
@@ -380,7 +378,7 @@ class DatasetManagement
 		{
 			if (forceGrayInterp == false && totalChannels >= 3 && bandIndex <= 3)
 			{
-				static const vector<GDALColorInterp> interps = {
+				static const std::vector<GDALColorInterp> interps = {
 					GCI_RedBand,
 					GCI_GreenBand,
 					GCI_BlueBand,
