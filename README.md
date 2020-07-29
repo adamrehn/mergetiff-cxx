@@ -5,6 +5,8 @@ This is a native C++ port of my Python library [mergetiff](https://github.com/ad
 
 Command-line usage is identical to that of the Python version, see [the relevant section of the Python version's README](https://github.com/adamrehn/mergetiff#using-the-command-line-tool) for details.
 
+The C++ version of the library also includes additional convenience functionality for working with the [C API entrypoints to the GDAL command-line utilities](https://gdal.org/api/gdal_utils.html), which are unnecessary in the Python version of the library due to the excellent SWIG bindings provided by the GDAL developers.
+
 
 Contents
 --------
