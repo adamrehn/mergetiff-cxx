@@ -8,6 +8,7 @@
 #include <gdal_priv.h>
 #include <gdal_utils.h>
 #include <gdal_version.h>
+#include <ogr_core.h>
 #include <ogr_spatialref.h>
 
 #define _MERGETIFF_DELETER_CLASS(dtype, callback) 
@@ -45,6 +46,9 @@ typedef MERGETIFF_SMART_POINTER_TYPE<char[], _CustomDeleterBaseVoid<char[], CPLF
 
 //Smart pointer type for GDAL datasets
 _MERGETIFF_VOID_DELETER_SMART_POINTER(GDALDataset, GDALClose);
+
+//Smart pointer type for OGR coordinate transformation objects
+_MERGETIFF_VOID_DELETER_SMART_POINTER(OGRCoordinateTransformation, OCTDestroyCoordinateTransformation);
 
 //Smart pointer types for the various options classes for the GDAL utility programs declared in <gdal_utils.h>
 _MERGETIFF_OPTS_DELETER_SMART_POINTER(GDALInfoOptions);
