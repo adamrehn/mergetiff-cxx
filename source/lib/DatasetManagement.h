@@ -4,10 +4,10 @@
 #include "DatatypeConversion.h"
 #include "DriverOptions.h"
 #include "ErrorHandling.h"
-#include "GDALDatasetRef.h"
 #include "LibrarySettings.h"
 #include "RasterData.h"
 #include "RasterIO.h"
+#include "SmartPointers.h"
 
 #include <algorithm>
 #include <gdal.h>

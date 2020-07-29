@@ -3,8 +3,8 @@
 
 #include "DatatypeConversion.h"
 #include "ErrorHandling.h"
-#include "GDALDatasetRef.h"
 #include "RasterData.h"
+#include "SmartPointers.h"
 
 #include <gdal_priv.h>
 #include <gdal.h>

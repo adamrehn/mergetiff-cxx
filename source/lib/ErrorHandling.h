@@ -1,8 +1,8 @@
 #ifndef _MERGETIFF_ERROR_HANDLING
 #define _MERGETIFF_ERROR_HANDLING
 
-#include "GDALDatasetRef.h"
 #include "LibrarySettings.h"
+#include "SmartPointers.h"
 
 #include <stdexcept>
 #include <string>

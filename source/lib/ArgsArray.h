@@ -1,6 +1,7 @@
 #ifndef _MERGETIFF_ARGS_ARRAY
 #define _MERGETIFF_ARGS_ARRAY
 
+#include <initializer_list>
 #include <memory>
 #include <string>
 #include <vector>
@@ -15,6 +16,14 @@ class ArgsArray
 		
 		//Creates an empty list
 		inline ArgsArray() {}
+		
+		//Initialises the list with values
+		inline ArgsArray(std::initializer_list<string> args)
+		{
+			for (auto arg : args) {
+				this->add(arg);
+			}
+		}
 		
 		//Initialises the list with values
 		inline ArgsArray(const vector<string>& args)
