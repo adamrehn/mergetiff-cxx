@@ -14,21 +14,23 @@ class RasterData
 	public:
 		
 		//Creates an empty object
-		RasterData() : _data(nullptr), _channels(0), _rows(0), _cols(0) {}
+		RasterData() : _data(nullptr), _autoRelease(false), _channels(0), _rows(0), _cols(0) {}
 		
 		//Creates a buffer with the specified dimensions
 		RasterData(uint64_t channels, uint64_t rows, uint64_t cols)
 		{
 			MERGETIFF_SMART_POINTER_RESET(this->_data, new PrimitiveTy[channels * rows * cols]);
+			this->_autoRelease = false;
 			this->_channels = channels;
 			this->_rows = rows;
 			this->_cols = cols;
 		}
 		
-		//Takes ownership of an existing buffer with the specified dimensions
-		RasterData(PrimitiveTy* buffer, uint64_t channels, uint64_t rows, uint64_t cols)
+		//Takes ownership of an existing buffer with the specified dimensions, or simply wraps the buffer if autoRelease == true
+		RasterData(PrimitiveTy* buffer, uint64_t channels, uint64_t rows, uint64_t cols, bool autoRelease = false)
 		{
 			MERGETIFF_SMART_POINTER_RESET(this->_data, buffer);
+			this->_autoRelease = autoRelease;
 			this->_channels = channels;
 			this->_rows = rows;
 			this->_cols = cols;
@@ -48,6 +50,22 @@ class RasterData
 		{
 			this->moveFrom(std::move(other));
 			return *this;
+		}
+		
+		//Destructor
+		~RasterData()
+		{
+			//If we don't actually own the memory for the underlying buffer then relinquish it
+			//(Note: this unconventional behaviour was chosen to avoid introducing breaking API changes to mergetiff, which would
+			// have otherwise been necessary to accommodate variants of RasterData that use weak pointers / shared pointers / etc.)
+			if (this->_autoRelease == true) {
+				this->releaseBuffer();
+			}
+		}
+		
+		//Determines if the underlying buffer is valid
+		operator bool() {
+			return this->_data;
 		}
 		
 		//Returns the number of channels in the raster data
@@ -88,6 +106,7 @@ class RasterData
 		//Relinquishes ownership of the underlying buffer and resets this object
 		PrimitiveTy* releaseBuffer()
 		{
+			this->_autoRelease = false;
 			this->_channels = 0;
 			this->_rows = 0;
 			this->_cols = 0;
@@ -100,9 +119,11 @@ class RasterData
 		void moveFrom(RasterData&& other)
 		{
 			this->_data = std::move(other._data);
-			this->_channels = std::move(other._channels);
-			this->_rows = std::move(other._rows);
-			this->_cols = std::move(other._cols);
+			this->_autoRelease = other._autoRelease;
+			this->_channels = other._channels;
+			this->_rows = other._rows;
+			this->_cols = other._cols;
+			other.releaseBuffer();
 		}
 		
 		//Computes the array index for the specified channel of the specified pixel
@@ -111,6 +132,7 @@ class RasterData
 		}
 		
 		MERGETIFF_SMART_POINTER_TYPE<PrimitiveTy[]> _data;
+		bool _autoRelease;
 		uint64_t _channels;
 		uint64_t _rows;
 		uint64_t _cols;
