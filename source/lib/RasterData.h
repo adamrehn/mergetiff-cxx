@@ -65,7 +65,7 @@ class RasterData
 		
 		//Determines if the underlying buffer is valid
 		operator bool() {
-			return this->_data;
+			return (bool)(this->_data);
 		}
 		
 		//Returns the number of channels in the raster data
