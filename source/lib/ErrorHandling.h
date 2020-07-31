@@ -63,12 +63,6 @@ class ErrorHandling
 		static inline T handleError(const std::string& message) {
 			return ErrorHandling::handleError(T(), message.c_str());
 		}
-		
-		//Template specialisation for GDALDatasetRef
-		template<>
-		static inline GDALDatasetRef handleError<GDALDatasetRef>(const std::string& message) {
-			return ErrorHandling::handleError(GDALDatasetRef(nullptr), message.c_str());
-		}
 };
 
 } //End namespace mergetiff
