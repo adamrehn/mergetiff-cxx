@@ -14,6 +14,11 @@
 #define MERGETIFF_SMART_POINTER_GET(ptr) ptr.get()
 #endif
 
+//If a user-specified smart pointer type does not support the `release()` method then an equivalent must be supplied
+#ifndef MERGETIFF_SMART_POINTER_RELEASE
+#define MERGETIFF_SMART_POINTER_RELEASE(ptr) ptr.release()
+#endif
+
 //If a user-specified smart pointer type does not support the `reset()` method then an equivalent must be supplied
 #ifndef MERGETIFF_SMART_POINTER_RESET
 #define MERGETIFF_SMART_POINTER_RESET(ptr, val) ptr.reset(val)

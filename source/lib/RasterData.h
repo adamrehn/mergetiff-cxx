@@ -85,6 +85,15 @@ class RasterData
 			return MERGETIFF_SMART_POINTER_GET(this->_data);
 		}
 		
+		//Relinquishes ownership of the underlying buffer and resets this object
+		PrimitiveTy* releaseBuffer()
+		{
+			this->_channels = 0;
+			this->_rows = 0;
+			this->_cols = 0;
+			return MERGETIFF_SMART_POINTER_RELEASE(this->_data);
+		}
+		
 	protected:
 		
 		//Moves data from another object instance
