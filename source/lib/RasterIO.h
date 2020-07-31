@@ -219,7 +219,7 @@ class RasterIO
 				numRows,
 				dtype,
 				sizeof(PrimitiveTy) * numChannels,
-				0
+				sizeof(PrimitiveTy) * numChannels * numCols
 			);
 			
 			return (result != CE_Failure);
@@ -241,7 +241,7 @@ class RasterIO
 				numRows,
 				dtype,
 				sizeof(PrimitiveTy) * numChannels,
-				0
+				sizeof(PrimitiveTy) * numChannels * numCols
 			);
 			
 			return (result != CE_Failure);
