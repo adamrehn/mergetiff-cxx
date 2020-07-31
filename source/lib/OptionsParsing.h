@@ -8,7 +8,7 @@
 #include <gdal_version.h>
 
 //Boilerplate macro for declaring our convenience functions for parsing utility options
-#define _MERGETIFF_OPTS_PARSER_METHOD(dtype) static inline dtype##Ref Parse##dtype(ArgsArray& args) { return dtype##Ref(dtype##New(args.get(), nullptr)); }
+#define _MERGETIFF_OPTS_PARSER_METHOD(dtype) static inline dtype##Ref parse##dtype(ArgsArray& args) { return dtype##Ref(dtype##New(args.get(), nullptr)); }
 
 namespace mergetiff {
 
