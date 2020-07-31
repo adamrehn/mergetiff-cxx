@@ -26,23 +26,23 @@ class _CustomDeleterBaseT
 };
 
 //Template class for smart pointer deleter objects that call functions which accept void* pointers
-template <typename T, void(*DeleterFunc)(void*)>
+template <void(*DeleterFunc)(void*)>
 class _CustomDeleterBaseVoid
 {
 	public:
-		inline void operator()(T* t) {
-			DeleterFunc(t);
+		inline void operator()(void* v) {
+			DeleterFunc(v);
 		}
 };
 
 //Boilerplate macros for declaring our smart pointer types
-#define _MERGETIFF_VOID_DELETER_SMART_POINTER(dtype, callback) typedef MERGETIFF_SMART_POINTER_TYPE<dtype, _CustomDeleterBaseVoid<dtype, callback>> dtype##Ref
+#define _MERGETIFF_VOID_DELETER_SMART_POINTER(dtype, callback) typedef MERGETIFF_SMART_POINTER_TYPE<dtype, _CustomDeleterBaseVoid<callback>> dtype##Ref
 #define _MERGETIFF_T_DELETER_SMART_POINTER(dtype, callback) typedef MERGETIFF_SMART_POINTER_TYPE<dtype, _CustomDeleterBaseT<dtype, callback>> dtype##Ref
 #define _MERGETIFF_OPTS_DELETER_SMART_POINTER(dtype) typedef MERGETIFF_SMART_POINTER_TYPE<dtype, _CustomDeleterBaseT<dtype, dtype##Free>> dtype##Ref
 
 //Smart pointer type for raw C strings returned by the GDAL API
 //(Note that you could also use the CPLString class from <cpl_string.h> and its Seize() method to achieve the same RAII behaviour, albeit with a memory copy and more verbose syntax)
-typedef MERGETIFF_SMART_POINTER_TYPE<char[], _CustomDeleterBaseVoid<char[], CPLFree>> CPLStringRef;
+typedef MERGETIFF_SMART_POINTER_TYPE<char[], _CustomDeleterBaseVoid<CPLFree>> CPLStringRef;
 
 //Smart pointer type for GDAL datasets
 _MERGETIFF_VOID_DELETER_SMART_POINTER(GDALDataset, GDALClose);
