@@ -74,7 +74,7 @@ class RasterIO
 		
 		//Reads the raster data for an entire dataset into an existing in-memory buffer
 		template <typename PrimitiveTy>
-		static inline bool readDataset(GDALDatasetRef& dataset, RasterData<PrimitiveTy>& data, std::vector<unsigned int> bands = std::vector<unsigned int>())
+		static inline bool readDataset(GDALDatasetRef& dataset, RasterData<PrimitiveTy>& data, std::vector<unsigned int> bands = std::vector<unsigned int>(), unsigned int destOffset = 0)
 		{
 			//Verify that a valid dataset was supplied
 			if (!dataset || dataset->GetRasterCount() < 1) {
@@ -107,24 +107,23 @@ class RasterIO
 			}
 			
 			//Determine the image dimensions
-			uint64_t numChannels = bands.size();
 			uint64_t numRows = dataset->GetRasterYSize();
 			uint64_t numCols = dataset->GetRasterXSize();
 			
 			//Verify that the buffer dimensions match the image dimensions
-			if (numChannels != data.channels() || numRows != data.rows() || numCols != data.cols()) {
+			if (destOffset + bands.size() > data.channels() || numRows != data.rows() || numCols != data.cols()) {
 				return ErrorHandling::handleError<bool>("dataset raster dimensions do not match supplied buffer dimensions");
 			}
 			
 			//Read the data one raster band at a time
-			unsigned int channelOffset = 0;
+			unsigned int channelOffset = destOffset;
 			for (auto bandIndex : bands)
 			{
 				//Retrieve the raster band for this channel
 				GDALRasterBand* band = dataset->GetRasterBand(bandIndex);
 				
 				//Read the raster data into our buffer
-				if (RasterIO::bandToBuffer<PrimitiveTy>(band, data, numChannels, numCols, numRows, channelOffset++) == false) {
+				if (RasterIO::bandToBuffer<PrimitiveTy>(band, data, data.channels(), numCols, numRows, channelOffset++) == false) {
 					return ErrorHandling::handleError<bool>("failed to read data from GDAL raster band");
 				}
 			}
