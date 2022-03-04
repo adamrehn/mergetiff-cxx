@@ -158,7 +158,7 @@ class RasterIO
 		
 		//Reads the raster data for an individual raster band into an existing in-memory buffer, with an optional destination channel offset
 		template <typename PrimitiveTy>
-		static inline bool readBandWithOffset(GDALDatasetRef& dataset, RasterData<PrimitiveTy>& data, unsigned int bandIndex, unsigned int destOffset = 0)
+		static inline bool readBandWithOffset(GDALDatasetRef& dataset, RasterData<PrimitiveTy>& data, int bandIndex, int destOffset = 0)
 		{
 			//Verify that a valid dataset was supplied
 			if (!dataset || dataset->GetRasterCount() < 1) {
@@ -172,12 +172,12 @@ class RasterIO
 			}
 			
 			//Verify that the requested band index is valid
-			if (bandIndex > dataset->GetRasterCount()) {
+			if (bandIndex < 0 || bandIndex > dataset->GetRasterCount()) {
 				return ErrorHandling::handleError<bool>("invalid band index " + std::to_string(bandIndex));
 			}
 			
 			//Verify that the specified destination channel offset is valid
-			if (destOffset >= data.channels()) {
+			if (destOffset < 0 || destOffset >= data.channels()) {
 				return ErrorHandling::handleError<bool>("destination channel offset " + std::to_string(destOffset));
 			}
 			
